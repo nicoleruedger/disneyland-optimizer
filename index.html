@@ -1,0 +1,2668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Day at Disneyland Optimizer</title>
+<style>
+  :root{
+    --bg:#faf8f5; --card:#fff; --ink:#2b2620; --sub:#7a7268; --line:#e8e2d9;
+    --accent:#7c5cbf; --accent2:#2f7d6d; --gold:#e0a83c; --warn:#c14e3f;
+    --dl:#5b8dd9; --dca:#d97b5b;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       background:var(--bg); color:var(--ink); font-size:16px; padding-bottom:90px}
+  header{padding:18px 16px 6px}
+  h1{font-size:22px; margin:0 0 2px}
+  .sub{color:var(--sub); font-size:13px; margin:0}
+  section{margin:14px 12px; background:var(--card); border:1px solid var(--line);
+          border-radius:14px; padding:14px}
+  h2{font-size:14px; text-transform:uppercase; letter-spacing:.06em; color:var(--sub); margin:0 0 10px}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  label{font-size:13px; color:var(--sub); display:block; margin-bottom:3px}
+  input[type=time],select{font-size:16px; padding:8px 10px; border:1px solid var(--line);
+    border-radius:9px; background:#fff; color:var(--ink)}
+  .presets{display:flex; gap:8px; flex-wrap:wrap; margin-top:4px}
+  .presets button{border:1px solid var(--line); background:#fff; border-radius:20px;
+    padding:7px 13px; font-size:14px; color:var(--ink)}
+  .parktabs{display:flex; gap:8px; margin-bottom:10px}
+  .parktabs button{flex:1; padding:9px; border-radius:10px; border:1px solid var(--line);
+    background:#fff; font-size:15px; font-weight:600; color:var(--sub)}
+  .parktabs button.on{color:#fff}
+  .parktabs button.on.dl{background:var(--dl); border-color:var(--dl)}
+  .parktabs button.on.dca{background:var(--dca); border-color:var(--dca)}
+  .land{margin:14px 0 4px; font-weight:700; font-size:15px}
+  .ride{display:flex; justify-content:space-between; align-items:center; gap:8px;
+        padding:7px 0; border-bottom:1px solid var(--line)}
+  .ride:last-child{border-bottom:none}
+  .rname{font-size:14.5px; line-height:1.25}
+  .rmeta{font-size:11.5px; color:var(--sub)}
+  .stars{display:flex; flex-shrink:0}
+  .stars span{font-size:21px; padding:2px 2px; color:#d8d2c8}
+  .stars span.on{color:var(--gold)}
+  .cta{position:fixed; left:0; right:0; bottom:0; padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+       background:linear-gradient(transparent, var(--bg) 30%)}
+  .cta button{width:100%; padding:15px; font-size:17px; font-weight:700; color:#fff;
+    background:var(--accent); border:none; border-radius:14px}
+  .btn2{border:1px solid var(--line); background:#fff; border-radius:10px; padding:9px 13px;
+        font-size:14px; color:var(--ink)}
+  .totals{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px}
+  .pill{background:var(--bg); border:1px solid var(--line); border-radius:10px;
+        padding:7px 11px; font-size:13px}
+  .pill b{font-size:16px; display:block}
+  .step{display:flex; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); align-items:flex-start}
+  .step:last-child{border-bottom:none}
+  .step.done .mid{opacity:.4; text-decoration:line-through}
+  .t{font-variant-numeric:tabular-nums; font-weight:700; font-size:14.5px; width:52px; flex-shrink:0}
+  .mid{flex:1}
+  .sname{font-size:14.5px; font-weight:600}
+  .schips{font-size:11.5px; color:var(--sub); margin-top:2px}
+  .chip{display:inline-block; padding:1px 7px; border-radius:8px; margin-right:4px; color:#fff; font-size:11px}
+  .chip.dl{background:var(--dl)} .chip.dca{background:var(--dca)}
+  .hopwarn{color:var(--warn); font-weight:600}
+  .step input[type=checkbox]{width:21px; height:21px; margin-top:2px; accent-color:var(--accent2)}
+  .note{font-size:12.5px; color:var(--sub); margin-top:8px}
+  .livebar{display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap}
+  #liveStatus{font-size:12.5px; color:var(--sub)}
+  #skipped{font-size:13px; color:var(--warn); margin-top:8px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏰 Day at Disneyland</h1>
+  <p class="sub">Rate the rides you want, set your day, hit Optimize.</p>
+</header>
+
+<section>
+  <h2>Your day</h2>
+  <div class="row">
+    <div><label>Arrive</label><input type="time" id="arrival" value="09:00"></div>
+    <div><label>Leave</label><input type="time" id="departure" value="22:00"></div>
+    <div><label>Start in</label>
+      <select id="startPark"><option value="DL">Disneyland</option><option value="DCA">California Adventure</option></select>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Pick your rides</h2>
+  <div class="presets">
+    <button onclick="preset('thrills')">🎢 Thrills</button>
+    <button onclick="preset('classics')">✨ Classics</button>
+    <button onclick="preset('kids')">🧸 Little kids</button>
+    <button onclick="preset('clear')">Clear</button>
+  </div>
+  <div class="parktabs" style="margin-top:12px">
+    <button id="tabDL" class="dl on" onclick="setTab('DL')">Disneyland</button>
+    <button id="tabDCA" class="dca" onclick="setTab('DCA')">California Adventure</button>
+  </div>
+  <div id="picker"></div>
+</section>
+
+<section id="planSection" class="hidden">
+  <h2>Your plan</h2>
+  <div class="totals" id="totals"></div>
+  <div id="timeline"></div>
+  <div id="skipped"></div>
+  <div class="livebar">
+    <button class="btn2" onclick="refreshLive()">📡 Refresh live waits</button>
+    <button class="btn2" onclick="replanFromNow()">🔄 Re-plan from now</button>
+    <span id="liveStatus"></span>
+  </div>
+  <p class="note">Check off rides as you go, then “Re-plan from now” re-routes the rest of your
+  day from where you are. Live waits come from queue-times.com when you have signal;
+  otherwise typical waits for the time of day are used.</p>
+</section>
+
+<p class="note" style="text-align:center;margin:20px 16px 0">
+Wait-time data powered by <a href="https://queue-times.com/" style="color:var(--accent)">Queue-Times.com</a><br>
+Unofficial fan tool · Not affiliated with the Walt Disney Company</p>
+<div class="cta"><button onclick="optimize()">Optimize my day</button></div>
+
+<script>
+window.RIDES_DATA = {
+ "generated": "2026-07-13",
+ "source": "queue-times.com (park 16 = Disneyland, park 17 = California Adventure); typical-wait curves modeled from published historical patterns",
+ "hours": [
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23
+ ],
+ "parkNames": {
+  "DL": "Disneyland Park",
+  "DCA": "Disney California Adventure"
+ },
+ "queueTimesParkIds": {
+  "DL": 16,
+  "DCA": 17
+ },
+ "lands": [
+  "DL|Main Street U.S.A.",
+  "DL|Adventureland",
+  "DL|New Orleans Square",
+  "DL|Bayou Country",
+  "DL|Frontierland",
+  "DL|Fantasyland",
+  "DL|Mickey's Toontown",
+  "DL|Tomorrowland",
+  "DL|Star Wars: Galaxy's Edge",
+  "DCA|Hollywood Land",
+  "DCA|Avengers Campus",
+  "DCA|Cars Land",
+  "DCA|San Fransokyo Square",
+  "DCA|Paradise Gardens Park",
+  "DCA|Pixar Pier",
+  "DCA|Grizzly Peak"
+ ],
+ "walkMatrix": {
+  "DL|Main Street U.S.A.": {
+   "DL|Main Street U.S.A.": 2,
+   "DL|Adventureland": 4,
+   "DL|New Orleans Square": 6,
+   "DL|Bayou Country": 8,
+   "DL|Frontierland": 6,
+   "DL|Fantasyland": 7,
+   "DL|Mickey's Toontown": 10,
+   "DL|Tomorrowland": 5,
+   "DL|Star Wars: Galaxy's Edge": 9,
+   "DCA|Hollywood Land": 18,
+   "DCA|Avengers Campus": 21,
+   "DCA|Cars Land": 22,
+   "DCA|San Fransokyo Square": 21,
+   "DCA|Paradise Gardens Park": 22,
+   "DCA|Pixar Pier": 24,
+   "DCA|Grizzly Peak": 19
+  },
+  "DL|Adventureland": {
+   "DL|Main Street U.S.A.": 4,
+   "DL|Adventureland": 2,
+   "DL|New Orleans Square": 2,
+   "DL|Bayou Country": 4,
+   "DL|Frontierland": 2,
+   "DL|Fantasyland": 4,
+   "DL|Mickey's Toontown": 8,
+   "DL|Tomorrowland": 5,
+   "DL|Star Wars: Galaxy's Edge": 6,
+   "DCA|Hollywood Land": 22,
+   "DCA|Avengers Campus": 24,
+   "DCA|Cars Land": 26,
+   "DCA|San Fransokyo Square": 25,
+   "DCA|Paradise Gardens Park": 26,
+   "DCA|Pixar Pier": 27,
+   "DCA|Grizzly Peak": 22
+  },
+  "DL|New Orleans Square": {
+   "DL|Main Street U.S.A.": 6,
+   "DL|Adventureland": 2,
+   "DL|New Orleans Square": 2,
+   "DL|Bayou Country": 2,
+   "DL|Frontierland": 2,
+   "DL|Fantasyland": 5,
+   "DL|Mickey's Toontown": 8,
+   "DL|Tomorrowland": 7,
+   "DL|Star Wars: Galaxy's Edge": 5,
+   "DCA|Hollywood Land": 24,
+   "DCA|Avengers Campus": 26,
+   "DCA|Cars Land": 28,
+   "DCA|San Fransokyo Square": 27,
+   "DCA|Paradise Gardens Park": 28,
+   "DCA|Pixar Pier": 29,
+   "DCA|Grizzly Peak": 24
+  },
+  "DL|Bayou Country": {
+   "DL|Main Street U.S.A.": 8,
+   "DL|Adventureland": 4,
+   "DL|New Orleans Square": 2,
+   "DL|Bayou Country": 2,
+   "DL|Frontierland": 3,
+   "DL|Fantasyland": 5,
+   "DL|Mickey's Toontown": 8,
+   "DL|Tomorrowland": 8,
+   "DL|Star Wars: Galaxy's Edge": 4,
+   "DCA|Hollywood Land": 25,
+   "DCA|Avengers Campus": 28,
+   "DCA|Cars Land": 30,
+   "DCA|San Fransokyo Square": 28,
+   "DCA|Paradise Gardens Park": 30,
+   "DCA|Pixar Pier": 31,
+   "DCA|Grizzly Peak": 26
+  },
+  "DL|Frontierland": {
+   "DL|Main Street U.S.A.": 6,
+   "DL|Adventureland": 2,
+   "DL|New Orleans Square": 2,
+   "DL|Bayou Country": 3,
+   "DL|Frontierland": 2,
+   "DL|Fantasyland": 3,
+   "DL|Mickey's Toontown": 6,
+   "DL|Tomorrowland": 6,
+   "DL|Star Wars: Galaxy's Edge": 4,
+   "DCA|Hollywood Land": 24,
+   "DCA|Avengers Campus": 26,
+   "DCA|Cars Land": 28,
+   "DCA|San Fransokyo Square": 27,
+   "DCA|Paradise Gardens Park": 28,
+   "DCA|Pixar Pier": 29,
+   "DCA|Grizzly Peak": 24
+  },
+  "DL|Fantasyland": {
+   "DL|Main Street U.S.A.": 7,
+   "DL|Adventureland": 4,
+   "DL|New Orleans Square": 5,
+   "DL|Bayou Country": 5,
+   "DL|Frontierland": 3,
+   "DL|Fantasyland": 2,
+   "DL|Mickey's Toontown": 4,
+   "DL|Tomorrowland": 4,
+   "DL|Star Wars: Galaxy's Edge": 4,
+   "DCA|Hollywood Land": 25,
+   "DCA|Avengers Campus": 28,
+   "DCA|Cars Land": 29,
+   "DCA|San Fransokyo Square": 28,
+   "DCA|Paradise Gardens Park": 29,
+   "DCA|Pixar Pier": 31,
+   "DCA|Grizzly Peak": 25
+  },
+  "DL|Mickey's Toontown": {
+   "DL|Main Street U.S.A.": 10,
+   "DL|Adventureland": 8,
+   "DL|New Orleans Square": 8,
+   "DL|Bayou Country": 8,
+   "DL|Frontierland": 6,
+   "DL|Fantasyland": 4,
+   "DL|Mickey's Toontown": 2,
+   "DL|Tomorrowland": 6,
+   "DL|Star Wars: Galaxy's Edge": 5,
+   "DCA|Hollywood Land": 28,
+   "DCA|Avengers Campus": 31,
+   "DCA|Cars Land": 33,
+   "DCA|San Fransokyo Square": 31,
+   "DCA|Paradise Gardens Park": 33,
+   "DCA|Pixar Pier": 34,
+   "DCA|Grizzly Peak": 29
+  },
+  "DL|Tomorrowland": {
+   "DL|Main Street U.S.A.": 5,
+   "DL|Adventureland": 5,
+   "DL|New Orleans Square": 7,
+   "DL|Bayou Country": 8,
+   "DL|Frontierland": 6,
+   "DL|Fantasyland": 4,
+   "DL|Mickey's Toontown": 6,
+   "DL|Tomorrowland": 2,
+   "DL|Star Wars: Galaxy's Edge": 8,
+   "DCA|Hollywood Land": 23,
+   "DCA|Avengers Campus": 26,
+   "DCA|Cars Land": 27,
+   "DCA|San Fransokyo Square": 26,
+   "DCA|Paradise Gardens Park": 27,
+   "DCA|Pixar Pier": 29,
+   "DCA|Grizzly Peak": 23
+  },
+  "DL|Star Wars: Galaxy's Edge": {
+   "DL|Main Street U.S.A.": 9,
+   "DL|Adventureland": 6,
+   "DL|New Orleans Square": 5,
+   "DL|Bayou Country": 4,
+   "DL|Frontierland": 4,
+   "DL|Fantasyland": 4,
+   "DL|Mickey's Toontown": 5,
+   "DL|Tomorrowland": 8,
+   "DL|Star Wars: Galaxy's Edge": 2,
+   "DCA|Hollywood Land": 27,
+   "DCA|Avengers Campus": 30,
+   "DCA|Cars Land": 32,
+   "DCA|San Fransokyo Square": 30,
+   "DCA|Paradise Gardens Park": 32,
+   "DCA|Pixar Pier": 33,
+   "DCA|Grizzly Peak": 28
+  },
+  "DCA|Hollywood Land": {
+   "DL|Main Street U.S.A.": 18,
+   "DL|Adventureland": 22,
+   "DL|New Orleans Square": 24,
+   "DL|Bayou Country": 25,
+   "DL|Frontierland": 24,
+   "DL|Fantasyland": 25,
+   "DL|Mickey's Toontown": 28,
+   "DL|Tomorrowland": 23,
+   "DL|Star Wars: Galaxy's Edge": 27,
+   "DCA|Hollywood Land": 2,
+   "DCA|Avengers Campus": 3,
+   "DCA|Cars Land": 5,
+   "DCA|San Fransokyo Square": 5,
+   "DCA|Paradise Gardens Park": 7,
+   "DCA|Pixar Pier": 9,
+   "DCA|Grizzly Peak": 4
+  },
+  "DCA|Avengers Campus": {
+   "DL|Main Street U.S.A.": 21,
+   "DL|Adventureland": 24,
+   "DL|New Orleans Square": 26,
+   "DL|Bayou Country": 28,
+   "DL|Frontierland": 26,
+   "DL|Fantasyland": 28,
+   "DL|Mickey's Toontown": 31,
+   "DL|Tomorrowland": 26,
+   "DL|Star Wars: Galaxy's Edge": 30,
+   "DCA|Hollywood Land": 3,
+   "DCA|Avengers Campus": 2,
+   "DCA|Cars Land": 2,
+   "DCA|San Fransokyo Square": 3,
+   "DCA|Paradise Gardens Park": 6,
+   "DCA|Pixar Pier": 8,
+   "DCA|Grizzly Peak": 5
+  },
+  "DCA|Cars Land": {
+   "DL|Main Street U.S.A.": 22,
+   "DL|Adventureland": 26,
+   "DL|New Orleans Square": 28,
+   "DL|Bayou Country": 30,
+   "DL|Frontierland": 28,
+   "DL|Fantasyland": 29,
+   "DL|Mickey's Toontown": 33,
+   "DL|Tomorrowland": 27,
+   "DL|Star Wars: Galaxy's Edge": 32,
+   "DCA|Hollywood Land": 5,
+   "DCA|Avengers Campus": 2,
+   "DCA|Cars Land": 2,
+   "DCA|San Fransokyo Square": 2,
+   "DCA|Paradise Gardens Park": 4,
+   "DCA|Pixar Pier": 6,
+   "DCA|Grizzly Peak": 5
+  },
+  "DCA|San Fransokyo Square": {
+   "DL|Main Street U.S.A.": 21,
+   "DL|Adventureland": 25,
+   "DL|New Orleans Square": 27,
+   "DL|Bayou Country": 28,
+   "DL|Frontierland": 27,
+   "DL|Fantasyland": 28,
+   "DL|Mickey's Toontown": 31,
+   "DL|Tomorrowland": 26,
+   "DL|Star Wars: Galaxy's Edge": 30,
+   "DCA|Hollywood Land": 5,
+   "DCA|Avengers Campus": 3,
+   "DCA|Cars Land": 2,
+   "DCA|San Fransokyo Square": 2,
+   "DCA|Paradise Gardens Park": 2,
+   "DCA|Pixar Pier": 4,
+   "DCA|Grizzly Peak": 3
+  },
+  "DCA|Paradise Gardens Park": {
+   "DL|Main Street U.S.A.": 22,
+   "DL|Adventureland": 26,
+   "DL|New Orleans Square": 28,
+   "DL|Bayou Country": 30,
+   "DL|Frontierland": 28,
+   "DL|Fantasyland": 29,
+   "DL|Mickey's Toontown": 33,
+   "DL|Tomorrowland": 27,
+   "DL|Star Wars: Galaxy's Edge": 32,
+   "DCA|Hollywood Land": 7,
+   "DCA|Avengers Campus": 6,
+   "DCA|Cars Land": 4,
+   "DCA|San Fransokyo Square": 2,
+   "DCA|Paradise Gardens Park": 2,
+   "DCA|Pixar Pier": 2,
+   "DCA|Grizzly Peak": 4
+  },
+  "DCA|Pixar Pier": {
+   "DL|Main Street U.S.A.": 24,
+   "DL|Adventureland": 27,
+   "DL|New Orleans Square": 29,
+   "DL|Bayou Country": 31,
+   "DL|Frontierland": 29,
+   "DL|Fantasyland": 31,
+   "DL|Mickey's Toontown": 34,
+   "DL|Tomorrowland": 29,
+   "DL|Star Wars: Galaxy's Edge": 33,
+   "DCA|Hollywood Land": 9,
+   "DCA|Avengers Campus": 8,
+   "DCA|Cars Land": 6,
+   "DCA|San Fransokyo Square": 4,
+   "DCA|Paradise Gardens Park": 2,
+   "DCA|Pixar Pier": 2,
+   "DCA|Grizzly Peak": 5
+  },
+  "DCA|Grizzly Peak": {
+   "DL|Main Street U.S.A.": 19,
+   "DL|Adventureland": 22,
+   "DL|New Orleans Square": 24,
+   "DL|Bayou Country": 26,
+   "DL|Frontierland": 24,
+   "DL|Fantasyland": 25,
+   "DL|Mickey's Toontown": 29,
+   "DL|Tomorrowland": 23,
+   "DL|Star Wars: Galaxy's Edge": 28,
+   "DCA|Hollywood Land": 4,
+   "DCA|Avengers Campus": 5,
+   "DCA|Cars Land": 5,
+   "DCA|San Fransokyo Square": 3,
+   "DCA|Paradise Gardens Park": 4,
+   "DCA|Pixar Pier": 5,
+   "DCA|Grizzly Peak": 2
+  }
+ },
+ "rides": [
+  {
+   "id": 12428,
+   "name": "Adventureland Treehouse",
+   "park": "DL",
+   "land": "Adventureland",
+   "landKey": "DL|Adventureland",
+   "duration": 15,
+   "peakWait": 5,
+   "profile": "flat",
+   "type": "walkthrough",
+   "typicalWait": {
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5,
+    "16": 5,
+    "17": 5,
+    "18": 5,
+    "19": 5,
+    "20": 5,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 326,
+   "name": "Indiana Jones Adventure",
+   "park": "DL",
+   "land": "Adventureland",
+   "landKey": "DL|Adventureland",
+   "duration": 3.5,
+   "peakWait": 50,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 35,
+    "10": 40,
+    "11": 50,
+    "12": 50,
+    "13": 50,
+    "14": 50,
+    "15": 50,
+    "16": 50,
+    "17": 45,
+    "18": 40,
+    "19": 40,
+    "20": 40,
+    "21": 40,
+    "22": 35,
+    "23": 30
+   }
+  },
+  {
+   "id": 296,
+   "name": "Jungle Cruise",
+   "park": "DL",
+   "land": "Adventureland",
+   "landKey": "DL|Adventureland",
+   "duration": 8,
+   "peakWait": 35,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 15,
+    "10": 20,
+    "11": 30,
+    "12": 35,
+    "13": 35,
+    "14": 35,
+    "15": 35,
+    "16": 30,
+    "17": 30,
+    "18": 30,
+    "19": 25,
+    "20": 25,
+    "21": 20,
+    "22": 20,
+    "23": 15
+   }
+  },
+  {
+   "id": 288,
+   "name": "Walt Disney's Enchanted Tiki Room",
+   "park": "DL",
+   "land": "Adventureland",
+   "landKey": "DL|Adventureland",
+   "duration": 15,
+   "peakWait": 5,
+   "profile": "flat",
+   "type": "show",
+   "typicalWait": {
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5,
+    "16": 5,
+    "17": 5,
+    "18": 5,
+    "19": 5,
+    "20": 5,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 304,
+   "name": "Davy Crockett's Explorer Canoes",
+   "park": "DL",
+   "land": "Bayou Country",
+   "landKey": "DL|Bayou Country",
+   "duration": 10,
+   "peakWait": 15,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 5,
+    "10": 10,
+    "11": 10,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 15,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 5
+   }
+  },
+  {
+   "id": 306,
+   "name": "The Many Adventures of Winnie the Pooh",
+   "park": "DL",
+   "land": "Bayou Country",
+   "landKey": "DL|Bayou Country",
+   "duration": 4,
+   "peakWait": 15,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 15,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 14168,
+   "name": "Tiana's Bayou Adventure",
+   "park": "DL",
+   "land": "Bayou Country",
+   "landKey": "DL|Bayou Country",
+   "duration": 12,
+   "peakWait": 60,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 40,
+    "10": 50,
+    "11": 55,
+    "12": 60,
+    "13": 60,
+    "14": 60,
+    "15": 55,
+    "16": 55,
+    "17": 55,
+    "18": 50,
+    "19": 50,
+    "20": 50,
+    "21": 45,
+    "22": 40,
+    "23": 35
+   }
+  },
+  {
+   "id": 307,
+   "name": "\"it's a small world\"",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 14,
+   "peakWait": 20,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 15,
+    "12": 20,
+    "13": 20,
+    "14": 20,
+    "15": 20,
+    "16": 20,
+    "17": 15,
+    "18": 15,
+    "19": 15,
+    "20": 15,
+    "21": 10,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 285,
+   "name": "Alice in Wonderland",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 4,
+   "peakWait": 30,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 15,
+    "10": 20,
+    "11": 25,
+    "12": 30,
+    "13": 30,
+    "14": 30,
+    "15": 25,
+    "16": 25,
+    "17": 25,
+    "18": 20,
+    "19": 20,
+    "20": 15,
+    "21": 15,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 303,
+   "name": "Casey Jr. Circus Train",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 3.5,
+   "peakWait": 15,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 15,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 275,
+   "name": "Dumbo the Flying Elephant",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 2,
+   "peakWait": 30,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 15,
+    "10": 20,
+    "11": 25,
+    "12": 30,
+    "13": 30,
+    "14": 30,
+    "15": 25,
+    "16": 25,
+    "17": 25,
+    "18": 20,
+    "19": 20,
+    "20": 15,
+    "21": 15,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 277,
+   "name": "King Arthur Carrousel",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 2,
+   "peakWait": 10,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 5,
+    "10": 5,
+    "11": 10,
+    "12": 10,
+    "13": 10,
+    "14": 10,
+    "15": 10,
+    "16": 10,
+    "17": 10,
+    "18": 5,
+    "19": 5,
+    "20": 5,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 278,
+   "name": "Mad Tea Party",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 1.5,
+   "peakWait": 10,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 5,
+    "10": 5,
+    "11": 10,
+    "12": 10,
+    "13": 10,
+    "14": 10,
+    "15": 10,
+    "16": 10,
+    "17": 10,
+    "18": 5,
+    "19": 5,
+    "20": 5,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 279,
+   "name": "Matterhorn Bobsleds",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 2.5,
+   "peakWait": 45,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 30,
+    "10": 40,
+    "11": 45,
+    "12": 45,
+    "13": 45,
+    "14": 45,
+    "15": 45,
+    "16": 45,
+    "17": 40,
+    "18": 40,
+    "19": 40,
+    "20": 35,
+    "21": 35,
+    "22": 30,
+    "23": 25
+   }
+  },
+  {
+   "id": 6711,
+   "name": "Meet Disney Princesses at Royal Hall",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 10,
+   "peakWait": 30,
+   "profile": "standard",
+   "type": "meet",
+   "typicalWait": {
+    "9": 10,
+    "10": 20,
+    "11": 25,
+    "12": 30,
+    "13": 30,
+    "14": 30,
+    "15": 30,
+    "16": 25,
+    "17": 25,
+    "18": 25,
+    "19": 20,
+    "20": 20,
+    "21": 20,
+    "22": 15,
+    "23": 10
+   }
+  },
+  {
+   "id": 280,
+   "name": "Mr. Toad's Wild Ride",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 2,
+   "peakWait": 20,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 15,
+    "11": 20,
+    "12": 20,
+    "13": 20,
+    "14": 20,
+    "15": 20,
+    "16": 15,
+    "17": 15,
+    "18": 15,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 5
+   }
+  },
+  {
+   "id": 281,
+   "name": "Peter Pan's Flight",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 3,
+   "peakWait": 45,
+   "profile": "ropedrop",
+   "type": "ride",
+   "typicalWait": {
+    "9": 45,
+    "10": 45,
+    "11": 45,
+    "12": 45,
+    "13": 45,
+    "14": 45,
+    "15": 40,
+    "16": 40,
+    "17": 40,
+    "18": 40,
+    "19": 35,
+    "20": 35,
+    "21": 35,
+    "22": 30,
+    "23": 25
+   }
+  },
+  {
+   "id": 282,
+   "name": "Pinocchio's Daring Journey",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 3,
+   "peakWait": 15,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 15,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 687,
+   "name": "Sleeping Beauty Castle Walkthrough",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 10,
+   "peakWait": 5,
+   "profile": "flat",
+   "type": "walkthrough",
+   "typicalWait": {
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5,
+    "16": 5,
+    "17": 5,
+    "18": 5,
+    "19": 5,
+    "20": 5,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 283,
+   "name": "Snow White's Enchanted Wish",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 2,
+   "peakWait": 20,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 15,
+    "11": 20,
+    "12": 20,
+    "13": 20,
+    "14": 20,
+    "15": 20,
+    "16": 15,
+    "17": 15,
+    "18": 15,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 5
+   }
+  },
+  {
+   "id": 305,
+   "name": "Storybook Land Canal Boats",
+   "park": "DL",
+   "land": "Fantasyland",
+   "landKey": "DL|Fantasyland",
+   "duration": 9,
+   "peakWait": 20,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 15,
+    "11": 20,
+    "12": 20,
+    "13": 20,
+    "14": 20,
+    "15": 20,
+    "16": 15,
+    "17": 15,
+    "18": 15,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 5
+   }
+  },
+  {
+   "id": 323,
+   "name": "Big Thunder Mountain Railroad",
+   "park": "DL",
+   "land": "Frontierland",
+   "landKey": "DL|Frontierland",
+   "duration": 3.5,
+   "peakWait": 40,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 30,
+    "10": 35,
+    "11": 40,
+    "12": 40,
+    "13": 40,
+    "14": 40,
+    "15": 40,
+    "16": 40,
+    "17": 35,
+    "18": 35,
+    "19": 35,
+    "20": 30,
+    "21": 30,
+    "22": 30,
+    "23": 25
+   }
+  },
+  {
+   "id": 456,
+   "name": "Mark Twain Riverboat",
+   "park": "DL",
+   "land": "Frontierland",
+   "landKey": "DL|Frontierland",
+   "duration": 14,
+   "peakWait": 10,
+   "profile": "flat",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 10,
+    "12": 10,
+    "13": 10,
+    "14": 10,
+    "15": 10,
+    "16": 10,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 331,
+   "name": "Pirate's Lair on Tom Sawyer Island",
+   "park": "DL",
+   "land": "Frontierland",
+   "landKey": "DL|Frontierland",
+   "duration": 30,
+   "peakWait": 5,
+   "profile": "flat",
+   "type": "play",
+   "typicalWait": {
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5,
+    "16": 5,
+    "17": 5,
+    "18": 5,
+    "19": 5,
+    "20": 5,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 328,
+   "name": "Sailing Ship Columbia",
+   "park": "DL",
+   "land": "Frontierland",
+   "landKey": "DL|Frontierland",
+   "duration": 14,
+   "peakWait": 10,
+   "profile": "flat",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 10,
+    "12": 10,
+    "13": 10,
+    "14": 10,
+    "15": 10,
+    "16": 10,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 674,
+   "name": "Disneyland Railroad",
+   "park": "DL",
+   "land": "Main Street U.S.A.",
+   "landKey": "DL|Main Street U.S.A.",
+   "duration": 20,
+   "peakWait": 10,
+   "profile": "flat",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 10,
+    "12": 10,
+    "13": 10,
+    "14": 10,
+    "15": 10,
+    "16": 10,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 690,
+   "name": "Great Moments with Mr. Lincoln",
+   "park": "DL",
+   "land": "Main Street U.S.A.",
+   "landKey": "DL|Main Street U.S.A.",
+   "duration": 15,
+   "peakWait": 5,
+   "profile": "flat",
+   "type": "show",
+   "typicalWait": {
+    "9": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5,
+    "16": 5,
+    "17": 5,
+    "18": 5,
+    "19": 5,
+    "20": 5,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 14923,
+   "name": "Walt Disney - A Magical Life",
+   "park": "DL",
+   "land": "Main Street U.S.A.",
+   "landKey": "DL|Main Street U.S.A.",
+   "duration": 17,
+   "peakWait": 10,
+   "profile": "flat",
+   "type": "show",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 10,
+    "12": 10,
+    "13": 10,
+    "14": 10,
+    "15": 10,
+    "16": 10,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 324,
+   "name": "Chip 'n' Dale's GADGETcoaster",
+   "park": "DL",
+   "land": "Mickey's Toontown",
+   "landKey": "DL|Mickey's Toontown",
+   "duration": 1,
+   "peakWait": 30,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 15,
+    "10": 20,
+    "11": 25,
+    "12": 30,
+    "13": 30,
+    "14": 30,
+    "15": 25,
+    "16": 25,
+    "17": 25,
+    "18": 20,
+    "19": 20,
+    "20": 15,
+    "21": 15,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 11526,
+   "name": "Mickey & Minnie's Runaway Railway",
+   "park": "DL",
+   "land": "Mickey's Toontown",
+   "landKey": "DL|Mickey's Toontown",
+   "duration": 5,
+   "peakWait": 45,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 30,
+    "10": 40,
+    "11": 45,
+    "12": 45,
+    "13": 45,
+    "14": 45,
+    "15": 45,
+    "16": 45,
+    "17": 40,
+    "18": 40,
+    "19": 40,
+    "20": 35,
+    "21": 35,
+    "22": 30,
+    "23": 25
+   }
+  },
+  {
+   "id": 709,
+   "name": "Mickey's House - Meet Mickey Mouse",
+   "park": "DL",
+   "land": "Mickey's Toontown",
+   "landKey": "DL|Mickey's Toontown",
+   "duration": 10,
+   "peakWait": 30,
+   "profile": "standard",
+   "type": "meet",
+   "typicalWait": {
+    "9": 10,
+    "10": 20,
+    "11": 25,
+    "12": 30,
+    "13": 30,
+    "14": 30,
+    "15": 30,
+    "16": 25,
+    "17": 25,
+    "18": 25,
+    "19": 20,
+    "20": 20,
+    "21": 20,
+    "22": 15,
+    "23": 10
+   }
+  },
+  {
+   "id": 684,
+   "name": "Minnie's House",
+   "park": "DL",
+   "land": "Mickey's Toontown",
+   "landKey": "DL|Mickey's Toontown",
+   "duration": 8,
+   "peakWait": 15,
+   "profile": "standard",
+   "type": "meet",
+   "typicalWait": {
+    "9": 5,
+    "10": 10,
+    "11": 10,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 15,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 5
+   }
+  },
+  {
+   "id": 332,
+   "name": "Roger Rabbit's Car Toon Spin",
+   "park": "DL",
+   "land": "Mickey's Toontown",
+   "landKey": "DL|Mickey's Toontown",
+   "duration": 3.5,
+   "peakWait": 35,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 15,
+    "10": 20,
+    "11": 30,
+    "12": 35,
+    "13": 35,
+    "14": 35,
+    "15": 35,
+    "16": 30,
+    "17": 30,
+    "18": 30,
+    "19": 25,
+    "20": 25,
+    "21": 20,
+    "22": 20,
+    "23": 15
+   }
+  },
+  {
+   "id": 13958,
+   "name": "Haunted Mansion",
+   "park": "DL",
+   "land": "New Orleans Square",
+   "landKey": "DL|New Orleans Square",
+   "duration": 9,
+   "peakWait": 35,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 25,
+    "10": 30,
+    "11": 35,
+    "12": 35,
+    "13": 35,
+    "14": 35,
+    "15": 35,
+    "16": 35,
+    "17": 30,
+    "18": 30,
+    "19": 30,
+    "20": 30,
+    "21": 25,
+    "22": 25,
+    "23": 20
+   }
+  },
+  {
+   "id": 289,
+   "name": "Pirates of the Caribbean",
+   "park": "DL",
+   "land": "New Orleans Square",
+   "landKey": "DL|New Orleans Square",
+   "duration": 15,
+   "peakWait": 25,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 15,
+    "11": 20,
+    "12": 25,
+    "13": 25,
+    "14": 25,
+    "15": 25,
+    "16": 20,
+    "17": 20,
+    "18": 20,
+    "19": 20,
+    "20": 20,
+    "21": 15,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 6339,
+   "name": "Millennium Falcon: Smugglers Run",
+   "park": "DL",
+   "land": "Star Wars: Galaxy's Edge",
+   "landKey": "DL|Star Wars: Galaxy's Edge",
+   "duration": 5,
+   "peakWait": 35,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 15,
+    "10": 20,
+    "11": 30,
+    "12": 35,
+    "13": 35,
+    "14": 35,
+    "15": 35,
+    "16": 30,
+    "17": 30,
+    "18": 30,
+    "19": 25,
+    "20": 25,
+    "21": 20,
+    "22": 20,
+    "23": 15
+   }
+  },
+  {
+   "id": 6340,
+   "name": "Star Wars: Rise of the Resistance",
+   "park": "DL",
+   "land": "Star Wars: Galaxy's Edge",
+   "landKey": "DL|Star Wars: Galaxy's Edge",
+   "duration": 18,
+   "peakWait": 70,
+   "profile": "ropedrop",
+   "type": "ride",
+   "typicalWait": {
+    "9": 70,
+    "10": 70,
+    "11": 70,
+    "12": 70,
+    "13": 65,
+    "14": 65,
+    "15": 65,
+    "16": 65,
+    "17": 60,
+    "18": 60,
+    "19": 55,
+    "20": 55,
+    "21": 50,
+    "22": 50,
+    "23": 40
+   }
+  },
+  {
+   "id": 287,
+   "name": "Astro Orbitor",
+   "park": "DL",
+   "land": "Tomorrowland",
+   "landKey": "DL|Tomorrowland",
+   "duration": 1.5,
+   "peakWait": 25,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 20,
+    "11": 20,
+    "12": 25,
+    "13": 25,
+    "14": 25,
+    "15": 20,
+    "16": 20,
+    "17": 20,
+    "18": 20,
+    "19": 15,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 317,
+   "name": "Autopia",
+   "park": "DL",
+   "land": "Tomorrowland",
+   "landKey": "DL|Tomorrowland",
+   "duration": 5,
+   "peakWait": 30,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 20,
+    "11": 25,
+    "12": 30,
+    "13": 30,
+    "14": 30,
+    "15": 30,
+    "16": 25,
+    "17": 25,
+    "18": 25,
+    "19": 20,
+    "20": 20,
+    "21": 20,
+    "22": 15,
+    "23": 10
+   }
+  },
+  {
+   "id": 273,
+   "name": "Buzz Lightyear Astro Blasters",
+   "park": "DL",
+   "land": "Tomorrowland",
+   "landKey": "DL|Tomorrowland",
+   "duration": 5,
+   "peakWait": 30,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 20,
+    "11": 25,
+    "12": 30,
+    "13": 30,
+    "14": 30,
+    "15": 30,
+    "16": 25,
+    "17": 25,
+    "18": 25,
+    "19": 20,
+    "20": 20,
+    "21": 20,
+    "22": 15,
+    "23": 10
+   }
+  },
+  {
+   "id": 274,
+   "name": "Disneyland Monorail",
+   "park": "DL",
+   "land": "Tomorrowland",
+   "landKey": "DL|Tomorrowland",
+   "duration": 10,
+   "peakWait": 10,
+   "profile": "flat",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 10,
+    "12": 10,
+    "13": 10,
+    "14": 10,
+    "15": 10,
+    "16": 10,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 276,
+   "name": "Finding Nemo Submarine Voyage",
+   "park": "DL",
+   "land": "Tomorrowland",
+   "landKey": "DL|Tomorrowland",
+   "duration": 13,
+   "peakWait": 30,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 20,
+    "11": 25,
+    "12": 30,
+    "13": 30,
+    "14": 30,
+    "15": 30,
+    "16": 25,
+    "17": 25,
+    "18": 25,
+    "19": 20,
+    "20": 20,
+    "21": 20,
+    "22": 15,
+    "23": 10
+   }
+  },
+  {
+   "id": 284,
+   "name": "Space Mountain (Hyperspace)",
+   "park": "DL",
+   "land": "Tomorrowland",
+   "landKey": "DL|Tomorrowland",
+   "duration": 3,
+   "peakWait": 55,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 40,
+    "10": 45,
+    "11": 50,
+    "12": 55,
+    "13": 55,
+    "14": 55,
+    "15": 50,
+    "16": 50,
+    "17": 50,
+    "18": 45,
+    "19": 45,
+    "20": 45,
+    "21": 40,
+    "22": 40,
+    "23": 35
+   }
+  },
+  {
+   "id": 286,
+   "name": "Star Tours - The Adventures Continue",
+   "park": "DL",
+   "land": "Tomorrowland",
+   "landKey": "DL|Tomorrowland",
+   "duration": 7,
+   "peakWait": 25,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 15,
+    "11": 20,
+    "12": 25,
+    "13": 25,
+    "14": 25,
+    "15": 25,
+    "16": 20,
+    "17": 20,
+    "18": 20,
+    "19": 20,
+    "20": 20,
+    "21": 15,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 329,
+   "name": "Guardians of the Galaxy - Mission: BREAKOUT!",
+   "park": "DCA",
+   "land": "Avengers Campus",
+   "landKey": "DCA|Avengers Campus",
+   "duration": 2.5,
+   "peakWait": 45,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 30,
+    "10": 40,
+    "11": 45,
+    "12": 45,
+    "13": 45,
+    "14": 45,
+    "15": 45,
+    "16": 45,
+    "17": 40,
+    "18": 40,
+    "19": 40,
+    "20": 35,
+    "21": 35,
+    "22": 30,
+    "23": 25
+   }
+  },
+  {
+   "id": 8843,
+   "name": "WEB SLINGERS: A Spider-Man Adventure",
+   "park": "DCA",
+   "land": "Avengers Campus",
+   "landKey": "DCA|Avengers Campus",
+   "duration": 5.5,
+   "peakWait": 45,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 20,
+    "10": 25,
+    "11": 35,
+    "12": 45,
+    "13": 45,
+    "14": 45,
+    "15": 45,
+    "16": 40,
+    "17": 40,
+    "18": 35,
+    "19": 35,
+    "20": 30,
+    "21": 25,
+    "22": 20,
+    "23": 20
+   }
+  },
+  {
+   "id": 13961,
+   "name": "Luigi's Rollickin' Roadsters",
+   "park": "DCA",
+   "land": "Cars Land",
+   "landKey": "DCA|Cars Land",
+   "duration": 2.5,
+   "peakWait": 25,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 15,
+    "11": 20,
+    "12": 25,
+    "13": 25,
+    "14": 25,
+    "15": 25,
+    "16": 20,
+    "17": 20,
+    "18": 20,
+    "19": 20,
+    "20": 20,
+    "21": 15,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 315,
+   "name": "Mater's Junkyard Jamboree",
+   "park": "DCA",
+   "land": "Cars Land",
+   "landKey": "DCA|Cars Land",
+   "duration": 2,
+   "peakWait": 20,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 15,
+    "11": 20,
+    "12": 20,
+    "13": 20,
+    "14": 20,
+    "15": 20,
+    "16": 15,
+    "17": 15,
+    "18": 15,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 5
+   }
+  },
+  {
+   "id": 295,
+   "name": "Radiator Springs Racers",
+   "park": "DCA",
+   "land": "Cars Land",
+   "landKey": "DCA|Cars Land",
+   "duration": 4.5,
+   "peakWait": 75,
+   "profile": "ropedrop",
+   "type": "ride",
+   "typicalWait": {
+    "9": 75,
+    "10": 75,
+    "11": 75,
+    "12": 75,
+    "13": 70,
+    "14": 70,
+    "15": 70,
+    "16": 70,
+    "17": 65,
+    "18": 65,
+    "19": 60,
+    "20": 60,
+    "21": 55,
+    "22": 50,
+    "23": 45
+   }
+  },
+  {
+   "id": 302,
+   "name": "Grizzly River Run",
+   "park": "DCA",
+   "land": "Grizzly Peak",
+   "landKey": "DCA|Grizzly Peak",
+   "duration": 7.5,
+   "peakWait": 35,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 15,
+    "10": 20,
+    "11": 30,
+    "12": 35,
+    "13": 35,
+    "14": 35,
+    "15": 35,
+    "16": 30,
+    "17": 30,
+    "18": 30,
+    "19": 25,
+    "20": 25,
+    "21": 20,
+    "22": 20,
+    "23": 15
+   }
+  },
+  {
+   "id": 293,
+   "name": "Redwood Creek Challenge Trail",
+   "park": "DCA",
+   "land": "Grizzly Peak",
+   "landKey": "DCA|Grizzly Peak",
+   "duration": 20,
+   "peakWait": 0,
+   "profile": "flat",
+   "type": "play",
+   "typicalWait": {
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 0,
+    "13": 0,
+    "14": 0,
+    "15": 0,
+    "16": 0,
+    "17": 0,
+    "18": 0,
+    "19": 0,
+    "20": 0,
+    "21": 0,
+    "22": 0,
+    "23": 0
+   }
+  },
+  {
+   "id": 312,
+   "name": "Soarin' Over California",
+   "park": "DCA",
+   "land": "Grizzly Peak",
+   "landKey": "DCA|Grizzly Peak",
+   "duration": 5,
+   "peakWait": 35,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 25,
+    "10": 30,
+    "11": 35,
+    "12": 35,
+    "13": 35,
+    "14": 35,
+    "15": 35,
+    "16": 35,
+    "17": 30,
+    "18": 30,
+    "19": 30,
+    "20": 30,
+    "21": 25,
+    "22": 25,
+    "23": 20
+   }
+  },
+  {
+   "id": 321,
+   "name": "Animation Academy",
+   "park": "DCA",
+   "land": "Hollywood Land",
+   "landKey": "DCA|Hollywood Land",
+   "duration": 15,
+   "peakWait": 15,
+   "profile": "flat",
+   "type": "show",
+   "typicalWait": {
+    "9": 15,
+    "10": 15,
+    "11": 15,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 15,
+    "18": 15,
+    "19": 15,
+    "20": 15,
+    "21": 15,
+    "22": 15,
+    "23": 15
+   }
+  },
+  {
+   "id": 6440,
+   "name": "Mickey's PhilharMagic",
+   "park": "DCA",
+   "land": "Hollywood Land",
+   "landKey": "DCA|Hollywood Land",
+   "duration": 12,
+   "peakWait": 10,
+   "profile": "flat",
+   "type": "show",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 10,
+    "12": 10,
+    "13": 10,
+    "14": 10,
+    "15": 10,
+    "16": 10,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 291,
+   "name": "Monsters, Inc. Mike & Sulley to the Rescue!",
+   "park": "DCA",
+   "land": "Hollywood Land",
+   "landKey": "DCA|Hollywood Land",
+   "duration": 4.5,
+   "peakWait": 25,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 15,
+    "11": 20,
+    "12": 25,
+    "13": 25,
+    "14": 25,
+    "15": 25,
+    "16": 20,
+    "17": 20,
+    "18": 20,
+    "19": 20,
+    "20": 20,
+    "21": 15,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 294,
+   "name": "Turtle Talk with Crush",
+   "park": "DCA",
+   "land": "Hollywood Land",
+   "landKey": "DCA|Hollywood Land",
+   "duration": 15,
+   "peakWait": 15,
+   "profile": "flat",
+   "type": "show",
+   "typicalWait": {
+    "9": 15,
+    "10": 15,
+    "11": 15,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 15,
+    "18": 15,
+    "19": 15,
+    "20": 15,
+    "21": 15,
+    "22": 15,
+    "23": 15
+   }
+  },
+  {
+   "id": 298,
+   "name": "Golden Zephyr",
+   "park": "DCA",
+   "land": "Paradise Gardens Park",
+   "landKey": "DCA|Paradise Gardens Park",
+   "duration": 1.5,
+   "peakWait": 10,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 5,
+    "10": 5,
+    "11": 10,
+    "12": 10,
+    "13": 10,
+    "14": 10,
+    "15": 10,
+    "16": 10,
+    "17": 10,
+    "18": 5,
+    "19": 5,
+    "20": 5,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 319,
+   "name": "Goofy's Sky School",
+   "park": "DCA",
+   "land": "Paradise Gardens Park",
+   "landKey": "DCA|Paradise Gardens Park",
+   "duration": 2,
+   "peakWait": 30,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 20,
+    "11": 25,
+    "12": 30,
+    "13": 30,
+    "14": 30,
+    "15": 30,
+    "16": 25,
+    "17": 25,
+    "18": 25,
+    "19": 20,
+    "20": 20,
+    "21": 20,
+    "22": 15,
+    "23": 10
+   }
+  },
+  {
+   "id": 301,
+   "name": "Silly Symphony Swings",
+   "park": "DCA",
+   "land": "Paradise Gardens Park",
+   "landKey": "DCA|Paradise Gardens Park",
+   "duration": 2,
+   "peakWait": 15,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 5,
+    "10": 10,
+    "11": 10,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 15,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 5
+   }
+  },
+  {
+   "id": 316,
+   "name": "The Little Mermaid - Ariel's Undersea Adventure",
+   "park": "DCA",
+   "land": "Paradise Gardens Park",
+   "landKey": "DCA|Paradise Gardens Park",
+   "duration": 6,
+   "peakWait": 15,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 15,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 14742,
+   "name": "World of Color - Happiness!",
+   "park": "DCA",
+   "land": "Paradise Gardens Park",
+   "landKey": "DCA|Paradise Gardens Park",
+   "duration": 25,
+   "peakWait": 0,
+   "profile": "flat",
+   "type": "show",
+   "typicalWait": {
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 0,
+    "13": 0,
+    "14": 0,
+    "15": 0,
+    "16": 0,
+    "17": 0,
+    "18": 0,
+    "19": 0,
+    "20": 0,
+    "21": 0,
+    "22": 0,
+    "23": 0
+   }
+  },
+  {
+   "id": 322,
+   "name": "Incredicoaster",
+   "park": "DCA",
+   "land": "Pixar Pier",
+   "landKey": "DCA|Pixar Pier",
+   "duration": 2,
+   "peakWait": 40,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 30,
+    "10": 35,
+    "11": 40,
+    "12": 40,
+    "13": 40,
+    "14": 40,
+    "15": 40,
+    "16": 40,
+    "17": 35,
+    "18": 35,
+    "19": 35,
+    "20": 30,
+    "21": 30,
+    "22": 30,
+    "23": 25
+   }
+  },
+  {
+   "id": 6643,
+   "name": "Inside Out Emotional Whirlwind",
+   "park": "DCA",
+   "land": "Pixar Pier",
+   "landKey": "DCA|Pixar Pier",
+   "duration": 2,
+   "peakWait": 15,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 15,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 310,
+   "name": "Jessie's Critter Carousel",
+   "park": "DCA",
+   "land": "Pixar Pier",
+   "landKey": "DCA|Pixar Pier",
+   "duration": 2,
+   "peakWait": 10,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 5,
+    "10": 5,
+    "11": 10,
+    "12": 10,
+    "13": 10,
+    "14": 10,
+    "15": 10,
+    "16": 10,
+    "17": 10,
+    "18": 5,
+    "19": 5,
+    "20": 5,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 300,
+   "name": "Jumpin' Jellyfish",
+   "park": "DCA",
+   "land": "Pixar Pier",
+   "landKey": "DCA|Pixar Pier",
+   "duration": 1.5,
+   "peakWait": 15,
+   "profile": "kiddie",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 15,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 10,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 5,
+    "22": 5,
+    "23": 5
+   }
+  },
+  {
+   "id": 311,
+   "name": "Pixar Pal-A-Round - Swinging",
+   "park": "DCA",
+   "land": "Pixar Pier",
+   "landKey": "DCA|Pixar Pier",
+   "duration": 15,
+   "peakWait": 20,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 10,
+    "10": 10,
+    "11": 15,
+    "12": 20,
+    "13": 20,
+    "14": 20,
+    "15": 20,
+    "16": 20,
+    "17": 15,
+    "18": 15,
+    "19": 15,
+    "20": 15,
+    "21": 10,
+    "22": 10,
+    "23": 10
+   }
+  },
+  {
+   "id": 5557,
+   "name": "Pixar Pal-A-Round - Non-Swinging",
+   "park": "DCA",
+   "land": "Pixar Pier",
+   "landKey": "DCA|Pixar Pier",
+   "duration": 15,
+   "peakWait": 15,
+   "profile": "standard",
+   "type": "ride",
+   "typicalWait": {
+    "9": 5,
+    "10": 10,
+    "11": 10,
+    "12": 15,
+    "13": 15,
+    "14": 15,
+    "15": 15,
+    "16": 15,
+    "17": 15,
+    "18": 10,
+    "19": 10,
+    "20": 10,
+    "21": 10,
+    "22": 10,
+    "23": 5
+   }
+  },
+  {
+   "id": 313,
+   "name": "Toy Story Midway Mania!",
+   "park": "DCA",
+   "land": "Pixar Pier",
+   "landKey": "DCA|Pixar Pier",
+   "duration": 7.5,
+   "peakWait": 40,
+   "profile": "headliner",
+   "type": "ride",
+   "typicalWait": {
+    "9": 30,
+    "10": 35,
+    "11": 40,
+    "12": 40,
+    "13": 40,
+    "14": 40,
+    "15": 40,
+    "16": 40,
+    "17": 35,
+    "18": 35,
+    "19": 35,
+    "20": 30,
+    "21": 30,
+    "22": 30,
+    "23": 25
+   }
+  },
+  {
+   "id": 13959,
+   "name": "The Bakery Tour",
+   "park": "DCA",
+   "land": "San Fransokyo Square",
+   "landKey": "DCA|San Fransokyo Square",
+   "duration": 15,
+   "peakWait": 0,
+   "profile": "flat",
+   "type": "walkthrough",
+   "typicalWait": {
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 0,
+    "13": 0,
+    "14": 0,
+    "15": 0,
+    "16": 0,
+    "17": 0,
+    "18": 0,
+    "19": 0,
+    "20": 0,
+    "21": 0,
+    "22": 0,
+    "23": 0
+   }
+  }
+ ]
+};
+
+</script>
+<script>
+/* Disneyland Day Optimizer — greedy scheduler
+ * Works in browser (window.Scheduler) and Node (module.exports).
+ *
+ * plan = optimize(DATA, {
+ *   ratings: { [rideId]: 1..5 },        // rides you want; unrated = skipped
+ *   arrival: "09:00", departure: "22:00",
+ *   startPark: "DL",                     // "DL" | "DCA"
+ *   liveWaits: { [rideId]: minutes },    // optional; overrides curve "now"
+ *   nowMinutes: null,                    // optional; when liveWaits was fetched
+ * })
+ */
+(function (root, factory) {
+  if (typeof module === "object" && module.exports) module.exports = factory();
+  else root.Scheduler = factory();
+})(typeof self !== "undefined" ? self : this, function () {
+
+  function toMin(hhmm) {
+    var p = hhmm.split(":");
+    return parseInt(p[0], 10) * 60 + parseInt(p[1] || 0, 10);
+  }
+  function toHHMM(min) {
+    var h = Math.floor(min / 60), m = Math.round(min % 60);
+    return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+  }
+
+  // Expected wait for a ride at absolute minute t (linear interp between hours).
+  // If a live wait exists and t is within 90 min of the live snapshot, blend
+  // live -> typical as we look further into the future.
+  function expectedWait(ride, t, liveWaits, nowMinutes) {
+    var hours = Object.keys(ride.typicalWait).map(Number).sort(function (a, b) { return a - b; });
+    var h = t / 60;
+    var lo = Math.max(hours[0], Math.min(hours[hours.length - 1], Math.floor(h)));
+    var hi = Math.min(hours[hours.length - 1], lo + 1);
+    var w0 = ride.typicalWait[String(lo)], w1 = ride.typicalWait[String(hi)];
+    var frac = Math.min(1, Math.max(0, h - lo));
+    var typical = w0 + (w1 - w0) * frac;
+
+    if (liveWaits && liveWaits[ride.id] != null && nowMinutes != null) {
+      var age = Math.abs(t - nowMinutes);
+      if (age <= 90) {
+        var trust = 1 - age / 90; // 1 now -> 0 at 90 min out
+        return liveWaits[ride.id] * trust + typical * (1 - trust);
+      }
+    }
+    return typical;
+  }
+
+  function optimize(DATA, opts) {
+    var ratings = opts.ratings || {};
+    var t = toMin(opts.arrival || "09:00");
+    var end = toMin(opts.departure || "22:00");
+    var startPark = opts.startPark || "DL";
+    var liveWaits = opts.liveWaits || null;
+    var nowMinutes = opts.nowMinutes != null ? opts.nowMinutes : null;
+
+    var byId = {};
+    DATA.rides.forEach(function (r) { byId[r.id] = r; });
+
+    var todo = Object.keys(ratings)
+      .filter(function (id) { return ratings[id] > 0 && byId[id]; })
+      .map(function (id) { return byId[id]; });
+
+    // start at a given land, or the entrance-most land of the starting park
+    var loc = opts.startLand ||
+      (startPark === "DCA" ? "DCA|Hollywood Land" : "DL|Main Street U.S.A.");
+    var steps = [], skipped = [];
+    var totals = { rides: 0, wait: 0, walk: 0, onRide: 0 };
+
+    while (todo.length) {
+      var best = null, bestScore = -1;
+      for (var i = 0; i < todo.length; i++) {
+        var r = todo[i];
+        var walk = DATA.walkMatrix[loc][r.landKey];
+        var wait = expectedWait(r, t + walk, liveWaits, nowMinutes);
+        var cost = walk + wait + r.duration;
+        if (t + cost > end) continue; // doesn't fit
+        // rating^2 so a 5-star headliner beats cheap low-rated filler
+        var score = Math.pow(ratings[r.id], 2) / cost;
+        // tiny bonus for staying in the current land: breaks ties toward clustering
+        if (r.landKey === loc) score *= 1.15;
+        if (score > bestScore) { bestScore = score; best = { r: r, walk: walk, wait: wait }; }
+      }
+      if (!best) break;
+
+      var r2 = best.r;
+      steps.push({
+        rideId: r2.id, landKey: r2.landKey,
+        start: toHHMM(t),
+        board: toHHMM(t + best.walk + best.wait),
+        done: toHHMM(t + best.walk + best.wait + r2.duration),
+        ride: r2.name, park: r2.park, land: r2.land,
+        walk: Math.round(best.walk), wait: Math.round(best.wait),
+        duration: r2.duration, rating: ratings[r2.id],
+      });
+      totals.rides++; totals.wait += best.wait; totals.walk += best.walk; totals.onRide += r2.duration;
+      t += best.walk + best.wait + r2.duration;
+      loc = r2.landKey;
+      todo.splice(todo.indexOf(r2), 1);
+    }
+
+    todo.forEach(function (r) { skipped.push(r.name); });
+    totals.wait = Math.round(totals.wait);
+    totals.walk = Math.round(totals.walk);
+    return { steps: steps, skipped: skipped, totals: totals, endOfPlan: toHHMM(t) };
+  }
+
+  return { optimize: optimize, expectedWait: expectedWait, toMin: toMin, toHHMM: toHHMM };
+});
+
+</script>
+<script>
+"use strict";
+const DATA = window.RIDES_DATA;
+const byId = {}; DATA.rides.forEach(r => byId[r.id] = r);
+
+// ---------- state (persisted) ----------
+let state = { ratings:{}, done:{}, tab:"DL",
+              arrival:"09:00", departure:"22:00", startPark:"DL" };
+try { Object.assign(state, JSON.parse(localStorage.getItem("dlopt")||"{}")); } catch(e){}
+let liveWaits = null, liveAt = null, lastPlan = null;
+function save(){ try{ localStorage.setItem("dlopt", JSON.stringify(state)); }catch(e){} }
+
+// ---------- ride picker ----------
+const TYPE_ICON = {ride:"", show:"🎭 ", meet:"🤝 ", play:"🛝 ", walkthrough:"🚶 "};
+function setTab(p){ state.tab=p; save(); renderPicker(); }
+function renderPicker(){
+  document.getElementById("tabDL").classList.toggle("on", state.tab==="DL");
+  document.getElementById("tabDCA").classList.toggle("on", state.tab==="DCA");
+  const lands = {};
+  DATA.rides.filter(r=>r.park===state.tab).forEach(r=>{
+    (lands[r.land] = lands[r.land]||[]).push(r);
+  });
+  let h = "";
+  for (const land of Object.keys(lands).sort()){
+    h += `<div class="land">${land}</div>`;
+    for (const r of lands[land].sort((a,b)=>b.peakWait-a.peakWait)){
+      const rating = state.ratings[r.id]||0;
+      h += `<div class="ride"><div>
+              <div class="rname">${TYPE_ICON[r.type]||""}${r.name}</div>
+              <div class="rmeta">~${r.peakWait} min peak · ${r.duration} min ride</div>
+            </div><div class="stars" data-id="${r.id}">`;
+      for (let s=1;s<=5;s++)
+        h += `<span class="${s<=rating?"on":""}" onclick="rate(${r.id},${s})">★</span>`;
+      h += `</div></div>`;
+    }
+  }
+  document.getElementById("picker").innerHTML = h;
+}
+function rate(id, s){
+  state.ratings[id] = (state.ratings[id]===s) ? 0 : s;
+  save(); renderPicker();
+}
+function preset(kind){
+  if (kind==="clear"){ state.ratings={}; state.done={}; }
+  else DATA.rides.forEach(r=>{
+    if (kind==="thrills"){
+      if (r.profile==="headliner"||r.profile==="ropedrop") state.ratings[r.id]=5;
+      else if (r.type==="ride" && r.peakWait>=30) state.ratings[r.id]=3;
+    }
+    if (kind==="classics"){
+      if (["Pirates of the Caribbean","Haunted Mansion","Jungle Cruise","\"it's a small world\"",
+           "Indiana Jones Adventure","Matterhorn Bobsleds","Space Mountain (Hyperspace)",
+           "Big Thunder Mountain Railroad","Peter Pan's Flight","Walt Disney's Enchanted Tiki Room",
+           "Soarin' Over California","Toy Story Midway Mania!","Radiator Springs Racers"]
+          .includes(r.name)) state.ratings[r.id]=5;
+    }
+    if (kind==="kids"){
+      if (r.profile==="kiddie") state.ratings[r.id]=5;
+      else if (r.type==="meet") state.ratings[r.id]=4;
+      else if (["\"it's a small world\"","Peter Pan's Flight","Jungle Cruise",
+                "The Many Adventures of Winnie the Pooh"].includes(r.name)) state.ratings[r.id]=4;
+    }
+  });
+  save(); renderPicker();
+}
+
+// ---------- optimize + timeline ----------
+function readSettings(){
+  state.arrival = document.getElementById("arrival").value || "09:00";
+  state.departure = document.getElementById("departure").value || "22:00";
+  state.startPark = document.getElementById("startPark").value;
+  save();
+}
+function activeRatings(){
+  const r = {};
+  const closed = window._closedNow || new Set();
+  for (const id in state.ratings)
+    if (state.ratings[id]>0 && !state.done[id] && !closed.has(Number(id)))
+      r[id]=state.ratings[id];
+  return r;
+}
+function nowHHMM(){ const d=new Date();
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+
+function runPlan(arrival, startLand){
+  readSettings();
+  const opts = { ratings:activeRatings(), arrival:arrival||state.arrival,
+    departure:state.departure, startPark:state.startPark, startLand:startLand||null };
+  if (liveWaits && liveAt){ opts.liveWaits=liveWaits; opts.nowMinutes=liveAt; }
+  lastPlan = Scheduler.optimize(DATA, opts);
+  renderPlan();
+  document.getElementById("planSection").classList.remove("hidden");
+  document.getElementById("planSection").scrollIntoView({behavior:"smooth"});
+}
+function optimize(){ state.done={}; save(); runPlan(); }
+function replanFromNow(){
+  // start from the land of the last checked-off ride, at the current time
+  let land = null;
+  if (lastPlan) for (const s of lastPlan.steps) if (state.done[s.rideId]) land = s.landKey;
+  runPlan(nowHHMM(), land);
+}
+function toggleDone(id){ state.done[id]=!state.done[id]; save(); renderPlan(); }
+
+function renderPlan(){
+  const p = lastPlan; if (!p) return;
+  const t = p.totals;
+  document.getElementById("totals").innerHTML =
+    `<div class="pill"><b>${t.rides}</b>attractions</div>
+     <div class="pill"><b>${Math.round(t.wait/60*10)/10}h</b>waiting</div>
+     <div class="pill"><b>${t.walk}m</b>walking</div>
+     <div class="pill"><b>${p.endOfPlan}</b>day ends</div>`;
+  let h = "", lastPark = null;
+  for (const s of p.steps){
+    const hop = lastPark && s.park!==lastPark;
+    lastPark = s.park;
+    if (hop) h += `<div class="schips hopwarn" style="padding:6px 0">⚠️ Park hop → ${DATA.parkNames[s.park]}</div>`;
+    h += `<div class="step ${state.done[s.rideId]?"done":""}">
+      <input type="checkbox" ${state.done[s.rideId]?"checked":""} onchange="toggleDone(${s.rideId})">
+      <div class="t">${s.start}</div>
+      <div class="mid"><div class="sname">${s.ride}</div>
+        <div class="schips"><span class="chip ${s.park.toLowerCase()}">${s.park}</span>
+        ${s.land} · 🚶 ${s.walk}m · ⏳ ${s.wait}m wait · 🎠 ${s.duration}m</div></div></div>`;
+  }
+  document.getElementById("timeline").innerHTML = h;
+  document.getElementById("skipped").textContent =
+    p.skipped.length ? "Didn't fit: " + p.skipped.join(", ") : "";
+}
+
+// ---------- live waits ----------
+async function refreshLive(){
+  const el = document.getElementById("liveStatus");
+  el.textContent = "Fetching…";
+  try {
+    const [dl, dca] = await Promise.all([16,17].map(id =>
+      fetch("https://queue-times.com/parks/"+id+"/queue_times.json").then(r=>r.json())));
+    liveWaits = {}; const closed = new Set();
+    for (const park of [dl,dca])
+      for (const land of park.lands)
+        for (const r of land.rides){
+          if (!byId[r.id]) continue;
+          if (r.is_open) liveWaits[r.id] = r.wait_time; else closed.add(r.id);
+        }
+    window._closedNow = closed; // excluded from planning while closed
+
+    const d = new Date(); liveAt = d.getHours()*60 + d.getMinutes();
+    el.textContent = "Live ✓ " + nowHHMM() + (closed.size? " · "+closed.size+" rated rides currently closed":"");
+    replanFromNow();
+  } catch(e){
+    el.textContent = "Couldn't fetch live data — using typical waits.";
+  }
+}
+
+// ---------- init ----------
+document.getElementById("arrival").value = state.arrival;
+document.getElementById("departure").value = state.departure;
+document.getElementById("startPark").value = state.startPark;
+renderPicker();
+</script>
+</body>
+</html>
