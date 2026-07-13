@@ -26,6 +26,9 @@
   .presets{display:flex; gap:8px; flex-wrap:wrap; margin-top:4px}
   .presets button{border:1px solid var(--line); background:#fff; border-radius:20px;
     padding:7px 13px; font-size:14px; color:var(--ink)}
+  .presets button.on{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600}
+  input[type=date]{font-size:16px; padding:8px 10px; border:1px solid var(--line);
+    border-radius:9px; background:#fff; color:var(--ink)}
   .parktabs{display:flex; gap:8px; margin-bottom:10px}
   .parktabs button{flex:1; padding:9px; border-radius:10px; border:1px solid var(--line);
     background:#fff; font-size:15px; font-weight:600; color:var(--sub)}
@@ -36,6 +39,9 @@
   .ride{display:flex; justify-content:space-between; align-items:center; gap:8px;
         padding:7px 0; border-bottom:1px solid var(--line)}
   .ride:last-child{border-bottom:none}
+  .selbox{width:21px; height:21px; flex-shrink:0; accent-color:var(--accent)}
+  .rmid{flex:1}
+  .rmid.dim{opacity:.45}
   .rname{font-size:14.5px; line-height:1.25}
   .rmeta{font-size:11.5px; color:var(--sub)}
   .stars{display:flex; flex-shrink:0}
@@ -78,21 +84,23 @@
 <section>
   <h2>Your day</h2>
   <div class="row">
+    <div><label>Date</label><input type="date" id="visitDate" onchange="crowdNote()"></div>
     <div><label>Arrive</label><input type="time" id="arrival" value="09:00"></div>
     <div><label>Leave</label><input type="time" id="departure" value="22:00"></div>
     <div><label>Start in</label>
       <select id="startPark"><option value="DL">Disneyland</option><option value="DCA">California Adventure</option></select>
     </div>
   </div>
+  <p class="note" id="crowdNoteEl"></p>
 </section>
 
 <section>
   <h2>Pick your rides</h2>
   <div class="presets">
-    <button onclick="preset('thrills')">🎢 Thrills</button>
-    <button onclick="preset('classics')">✨ Classics</button>
-    <button onclick="preset('kids')">🧸 Little kids</button>
-    <button onclick="preset('clear')">Clear</button>
+    <button id="pb-thrills" onclick="preset('thrills')">🎢 Thrills</button>
+    <button id="pb-classics" onclick="preset('classics')">✨ Classics</button>
+    <button id="pb-kids" onclick="preset('kids')">🧸 Little kids</button>
+    <button id="pb-clear" onclick="preset('clear')">Clear</button>
   </div>
   <div class="parktabs" style="margin-top:12px">
     <button id="tabDL" class="dl on" onclick="setTab('DL')">Disneyland</button>
@@ -119,6 +127,7 @@
 <p class="note" style="text-align:center;margin:20px 16px 0">
 Wait-time data powered by <a href="https://queue-times.com/" style="color:var(--accent)">Queue-Times.com</a><br>
 Unofficial fan tool · Not affiliated with the Walt Disney Company</p>
+
 <div class="cta"><button onclick="optimize()">Optimize my day</button></div>
 
 <script>
@@ -170,292 +179,292 @@ window.RIDES_DATA = {
  ],
  "walkMatrix": {
   "DL|Main Street U.S.A.": {
-   "DL|Main Street U.S.A.": 2,
-   "DL|Adventureland": 4,
-   "DL|New Orleans Square": 6,
-   "DL|Bayou Country": 8,
-   "DL|Frontierland": 6,
-   "DL|Fantasyland": 7,
-   "DL|Mickey's Toontown": 10,
-   "DL|Tomorrowland": 5,
-   "DL|Star Wars: Galaxy's Edge": 9,
-   "DCA|Hollywood Land": 18,
-   "DCA|Avengers Campus": 21,
-   "DCA|Cars Land": 22,
-   "DCA|San Fransokyo Square": 21,
-   "DCA|Paradise Gardens Park": 22,
-   "DCA|Pixar Pier": 24,
-   "DCA|Grizzly Peak": 19
-  },
-  "DL|Adventureland": {
-   "DL|Main Street U.S.A.": 4,
-   "DL|Adventureland": 2,
-   "DL|New Orleans Square": 2,
-   "DL|Bayou Country": 4,
-   "DL|Frontierland": 2,
-   "DL|Fantasyland": 4,
-   "DL|Mickey's Toontown": 8,
-   "DL|Tomorrowland": 5,
-   "DL|Star Wars: Galaxy's Edge": 6,
-   "DCA|Hollywood Land": 22,
-   "DCA|Avengers Campus": 24,
-   "DCA|Cars Land": 26,
-   "DCA|San Fransokyo Square": 25,
-   "DCA|Paradise Gardens Park": 26,
-   "DCA|Pixar Pier": 27,
-   "DCA|Grizzly Peak": 22
-  },
-  "DL|New Orleans Square": {
-   "DL|Main Street U.S.A.": 6,
-   "DL|Adventureland": 2,
-   "DL|New Orleans Square": 2,
-   "DL|Bayou Country": 2,
-   "DL|Frontierland": 2,
-   "DL|Fantasyland": 5,
-   "DL|Mickey's Toontown": 8,
-   "DL|Tomorrowland": 7,
-   "DL|Star Wars: Galaxy's Edge": 5,
-   "DCA|Hollywood Land": 24,
-   "DCA|Avengers Campus": 26,
-   "DCA|Cars Land": 28,
-   "DCA|San Fransokyo Square": 27,
-   "DCA|Paradise Gardens Park": 28,
-   "DCA|Pixar Pier": 29,
-   "DCA|Grizzly Peak": 24
-  },
-  "DL|Bayou Country": {
-   "DL|Main Street U.S.A.": 8,
-   "DL|Adventureland": 4,
-   "DL|New Orleans Square": 2,
-   "DL|Bayou Country": 2,
-   "DL|Frontierland": 3,
-   "DL|Fantasyland": 5,
-   "DL|Mickey's Toontown": 8,
-   "DL|Tomorrowland": 8,
-   "DL|Star Wars: Galaxy's Edge": 4,
-   "DCA|Hollywood Land": 25,
-   "DCA|Avengers Campus": 28,
-   "DCA|Cars Land": 30,
-   "DCA|San Fransokyo Square": 28,
-   "DCA|Paradise Gardens Park": 30,
-   "DCA|Pixar Pier": 31,
-   "DCA|Grizzly Peak": 26
-  },
-  "DL|Frontierland": {
-   "DL|Main Street U.S.A.": 6,
-   "DL|Adventureland": 2,
-   "DL|New Orleans Square": 2,
-   "DL|Bayou Country": 3,
-   "DL|Frontierland": 2,
-   "DL|Fantasyland": 3,
-   "DL|Mickey's Toontown": 6,
-   "DL|Tomorrowland": 6,
-   "DL|Star Wars: Galaxy's Edge": 4,
-   "DCA|Hollywood Land": 24,
-   "DCA|Avengers Campus": 26,
-   "DCA|Cars Land": 28,
-   "DCA|San Fransokyo Square": 27,
-   "DCA|Paradise Gardens Park": 28,
-   "DCA|Pixar Pier": 29,
-   "DCA|Grizzly Peak": 24
-  },
-  "DL|Fantasyland": {
-   "DL|Main Street U.S.A.": 7,
-   "DL|Adventureland": 4,
-   "DL|New Orleans Square": 5,
-   "DL|Bayou Country": 5,
-   "DL|Frontierland": 3,
-   "DL|Fantasyland": 2,
-   "DL|Mickey's Toontown": 4,
-   "DL|Tomorrowland": 4,
-   "DL|Star Wars: Galaxy's Edge": 4,
-   "DCA|Hollywood Land": 25,
-   "DCA|Avengers Campus": 28,
-   "DCA|Cars Land": 29,
-   "DCA|San Fransokyo Square": 28,
-   "DCA|Paradise Gardens Park": 29,
-   "DCA|Pixar Pier": 31,
-   "DCA|Grizzly Peak": 25
-  },
-  "DL|Mickey's Toontown": {
-   "DL|Main Street U.S.A.": 10,
-   "DL|Adventureland": 8,
-   "DL|New Orleans Square": 8,
-   "DL|Bayou Country": 8,
-   "DL|Frontierland": 6,
-   "DL|Fantasyland": 4,
-   "DL|Mickey's Toontown": 2,
-   "DL|Tomorrowland": 6,
-   "DL|Star Wars: Galaxy's Edge": 5,
-   "DCA|Hollywood Land": 28,
-   "DCA|Avengers Campus": 31,
-   "DCA|Cars Land": 33,
-   "DCA|San Fransokyo Square": 31,
-   "DCA|Paradise Gardens Park": 33,
-   "DCA|Pixar Pier": 34,
-   "DCA|Grizzly Peak": 29
-  },
-  "DL|Tomorrowland": {
-   "DL|Main Street U.S.A.": 5,
-   "DL|Adventureland": 5,
-   "DL|New Orleans Square": 7,
-   "DL|Bayou Country": 8,
-   "DL|Frontierland": 6,
-   "DL|Fantasyland": 4,
-   "DL|Mickey's Toontown": 6,
-   "DL|Tomorrowland": 2,
-   "DL|Star Wars: Galaxy's Edge": 8,
-   "DCA|Hollywood Land": 23,
-   "DCA|Avengers Campus": 26,
-   "DCA|Cars Land": 27,
-   "DCA|San Fransokyo Square": 26,
-   "DCA|Paradise Gardens Park": 27,
-   "DCA|Pixar Pier": 29,
-   "DCA|Grizzly Peak": 23
-  },
-  "DL|Star Wars: Galaxy's Edge": {
-   "DL|Main Street U.S.A.": 9,
-   "DL|Adventureland": 6,
-   "DL|New Orleans Square": 5,
-   "DL|Bayou Country": 4,
-   "DL|Frontierland": 4,
-   "DL|Fantasyland": 4,
-   "DL|Mickey's Toontown": 5,
-   "DL|Tomorrowland": 8,
-   "DL|Star Wars: Galaxy's Edge": 2,
+   "DL|Main Street U.S.A.": 3,
+   "DL|Adventureland": 7,
+   "DL|New Orleans Square": 10,
+   "DL|Bayou Country": 12,
+   "DL|Frontierland": 9,
+   "DL|Fantasyland": 11,
+   "DL|Mickey's Toontown": 15,
+   "DL|Tomorrowland": 9,
+   "DL|Star Wars: Galaxy's Edge": 14,
    "DCA|Hollywood Land": 27,
-   "DCA|Avengers Campus": 30,
+   "DCA|Avengers Campus": 31,
    "DCA|Cars Land": 32,
-   "DCA|San Fransokyo Square": 30,
+   "DCA|San Fransokyo Square": 31,
    "DCA|Paradise Gardens Park": 32,
-   "DCA|Pixar Pier": 33,
+   "DCA|Pixar Pier": 34,
    "DCA|Grizzly Peak": 28
   },
+  "DL|Adventureland": {
+   "DL|Main Street U.S.A.": 7,
+   "DL|Adventureland": 3,
+   "DL|New Orleans Square": 5,
+   "DL|Bayou Country": 7,
+   "DL|Frontierland": 4,
+   "DL|Fantasyland": 8,
+   "DL|Mickey's Toontown": 12,
+   "DL|Tomorrowland": 9,
+   "DL|Star Wars: Galaxy's Edge": 9,
+   "DCA|Hollywood Land": 32,
+   "DCA|Avengers Campus": 35,
+   "DCA|Cars Land": 37,
+   "DCA|San Fransokyo Square": 36,
+   "DCA|Paradise Gardens Park": 37,
+   "DCA|Pixar Pier": 39,
+   "DCA|Grizzly Peak": 32
+  },
+  "DL|New Orleans Square": {
+   "DL|Main Street U.S.A.": 10,
+   "DL|Adventureland": 5,
+   "DL|New Orleans Square": 3,
+   "DL|Bayou Country": 4,
+   "DL|Frontierland": 4,
+   "DL|Fantasyland": 8,
+   "DL|Mickey's Toontown": 12,
+   "DL|Tomorrowland": 11,
+   "DL|Star Wars: Galaxy's Edge": 8,
+   "DCA|Hollywood Land": 34,
+   "DCA|Avengers Campus": 38,
+   "DCA|Cars Land": 39,
+   "DCA|San Fransokyo Square": 38,
+   "DCA|Paradise Gardens Park": 39,
+   "DCA|Pixar Pier": 41,
+   "DCA|Grizzly Peak": 35
+  },
+  "DL|Bayou Country": {
+   "DL|Main Street U.S.A.": 12,
+   "DL|Adventureland": 7,
+   "DL|New Orleans Square": 4,
+   "DL|Bayou Country": 3,
+   "DL|Frontierland": 6,
+   "DL|Fantasyland": 9,
+   "DL|Mickey's Toontown": 12,
+   "DL|Tomorrowland": 13,
+   "DL|Star Wars: Galaxy's Edge": 7,
+   "DCA|Hollywood Land": 36,
+   "DCA|Avengers Campus": 40,
+   "DCA|Cars Land": 42,
+   "DCA|San Fransokyo Square": 40,
+   "DCA|Paradise Gardens Park": 42,
+   "DCA|Pixar Pier": 44,
+   "DCA|Grizzly Peak": 37
+  },
+  "DL|Frontierland": {
+   "DL|Main Street U.S.A.": 9,
+   "DL|Adventureland": 4,
+   "DL|New Orleans Square": 4,
+   "DL|Bayou Country": 6,
+   "DL|Frontierland": 4,
+   "DL|Fantasyland": 6,
+   "DL|Mickey's Toontown": 10,
+   "DL|Tomorrowland": 9,
+   "DL|Star Wars: Galaxy's Edge": 7,
+   "DCA|Hollywood Land": 34,
+   "DCA|Avengers Campus": 38,
+   "DCA|Cars Land": 40,
+   "DCA|San Fransokyo Square": 38,
+   "DCA|Paradise Gardens Park": 40,
+   "DCA|Pixar Pier": 41,
+   "DCA|Grizzly Peak": 35
+  },
+  "DL|Fantasyland": {
+   "DL|Main Street U.S.A.": 11,
+   "DL|Adventureland": 8,
+   "DL|New Orleans Square": 8,
+   "DL|Bayou Country": 9,
+   "DL|Frontierland": 6,
+   "DL|Fantasyland": 4,
+   "DL|Mickey's Toontown": 7,
+   "DL|Tomorrowland": 7,
+   "DL|Star Wars: Galaxy's Edge": 7,
+   "DCA|Hollywood Land": 36,
+   "DCA|Avengers Campus": 40,
+   "DCA|Cars Land": 41,
+   "DCA|San Fransokyo Square": 40,
+   "DCA|Paradise Gardens Park": 41,
+   "DCA|Pixar Pier": 43,
+   "DCA|Grizzly Peak": 37
+  },
+  "DL|Mickey's Toontown": {
+   "DL|Main Street U.S.A.": 15,
+   "DL|Adventureland": 12,
+   "DL|New Orleans Square": 12,
+   "DL|Bayou Country": 12,
+   "DL|Frontierland": 10,
+   "DL|Fantasyland": 7,
+   "DL|Mickey's Toontown": 3,
+   "DL|Tomorrowland": 10,
+   "DL|Star Wars: Galaxy's Edge": 8,
+   "DCA|Hollywood Land": 40,
+   "DCA|Avengers Campus": 44,
+   "DCA|Cars Land": 46,
+   "DCA|San Fransokyo Square": 44,
+   "DCA|Paradise Gardens Park": 46,
+   "DCA|Pixar Pier": 48,
+   "DCA|Grizzly Peak": 41
+  },
+  "DL|Tomorrowland": {
+   "DL|Main Street U.S.A.": 9,
+   "DL|Adventureland": 9,
+   "DL|New Orleans Square": 11,
+   "DL|Bayou Country": 13,
+   "DL|Frontierland": 9,
+   "DL|Fantasyland": 7,
+   "DL|Mickey's Toontown": 10,
+   "DL|Tomorrowland": 4,
+   "DL|Star Wars: Galaxy's Edge": 12,
+   "DCA|Hollywood Land": 33,
+   "DCA|Avengers Campus": 37,
+   "DCA|Cars Land": 39,
+   "DCA|San Fransokyo Square": 37,
+   "DCA|Paradise Gardens Park": 39,
+   "DCA|Pixar Pier": 41,
+   "DCA|Grizzly Peak": 34
+  },
+  "DL|Star Wars: Galaxy's Edge": {
+   "DL|Main Street U.S.A.": 14,
+   "DL|Adventureland": 9,
+   "DL|New Orleans Square": 8,
+   "DL|Bayou Country": 7,
+   "DL|Frontierland": 7,
+   "DL|Fantasyland": 7,
+   "DL|Mickey's Toontown": 8,
+   "DL|Tomorrowland": 12,
+   "DL|Star Wars: Galaxy's Edge": 5,
+   "DCA|Hollywood Land": 39,
+   "DCA|Avengers Campus": 43,
+   "DCA|Cars Land": 44,
+   "DCA|San Fransokyo Square": 43,
+   "DCA|Paradise Gardens Park": 44,
+   "DCA|Pixar Pier": 46,
+   "DCA|Grizzly Peak": 40
+  },
   "DCA|Hollywood Land": {
-   "DL|Main Street U.S.A.": 18,
-   "DL|Adventureland": 22,
-   "DL|New Orleans Square": 24,
-   "DL|Bayou Country": 25,
-   "DL|Frontierland": 24,
-   "DL|Fantasyland": 25,
-   "DL|Mickey's Toontown": 28,
-   "DL|Tomorrowland": 23,
-   "DL|Star Wars: Galaxy's Edge": 27,
-   "DCA|Hollywood Land": 2,
+   "DL|Main Street U.S.A.": 27,
+   "DL|Adventureland": 32,
+   "DL|New Orleans Square": 34,
+   "DL|Bayou Country": 36,
+   "DL|Frontierland": 34,
+   "DL|Fantasyland": 36,
+   "DL|Mickey's Toontown": 40,
+   "DL|Tomorrowland": 33,
+   "DL|Star Wars: Galaxy's Edge": 39,
+   "DCA|Hollywood Land": 3,
+   "DCA|Avengers Campus": 6,
+   "DCA|Cars Land": 8,
+   "DCA|San Fransokyo Square": 8,
+   "DCA|Paradise Gardens Park": 11,
+   "DCA|Pixar Pier": 13,
+   "DCA|Grizzly Peak": 8
+  },
+  "DCA|Avengers Campus": {
+   "DL|Main Street U.S.A.": 31,
+   "DL|Adventureland": 35,
+   "DL|New Orleans Square": 38,
+   "DL|Bayou Country": 40,
+   "DL|Frontierland": 38,
+   "DL|Fantasyland": 40,
+   "DL|Mickey's Toontown": 44,
+   "DL|Tomorrowland": 37,
+   "DL|Star Wars: Galaxy's Edge": 43,
+   "DCA|Hollywood Land": 6,
    "DCA|Avengers Campus": 3,
    "DCA|Cars Land": 5,
+   "DCA|San Fransokyo Square": 7,
+   "DCA|Paradise Gardens Park": 9,
+   "DCA|Pixar Pier": 12,
+   "DCA|Grizzly Peak": 9
+  },
+  "DCA|Cars Land": {
+   "DL|Main Street U.S.A.": 32,
+   "DL|Adventureland": 37,
+   "DL|New Orleans Square": 39,
+   "DL|Bayou Country": 42,
+   "DL|Frontierland": 40,
+   "DL|Fantasyland": 41,
+   "DL|Mickey's Toontown": 46,
+   "DL|Tomorrowland": 39,
+   "DL|Star Wars: Galaxy's Edge": 44,
+   "DCA|Hollywood Land": 8,
+   "DCA|Avengers Campus": 5,
+   "DCA|Cars Land": 4,
    "DCA|San Fransokyo Square": 5,
    "DCA|Paradise Gardens Park": 7,
    "DCA|Pixar Pier": 9,
-   "DCA|Grizzly Peak": 4
-  },
-  "DCA|Avengers Campus": {
-   "DL|Main Street U.S.A.": 21,
-   "DL|Adventureland": 24,
-   "DL|New Orleans Square": 26,
-   "DL|Bayou Country": 28,
-   "DL|Frontierland": 26,
-   "DL|Fantasyland": 28,
-   "DL|Mickey's Toontown": 31,
-   "DL|Tomorrowland": 26,
-   "DL|Star Wars: Galaxy's Edge": 30,
-   "DCA|Hollywood Land": 3,
-   "DCA|Avengers Campus": 2,
-   "DCA|Cars Land": 2,
-   "DCA|San Fransokyo Square": 3,
-   "DCA|Paradise Gardens Park": 6,
-   "DCA|Pixar Pier": 8,
-   "DCA|Grizzly Peak": 5
-  },
-  "DCA|Cars Land": {
-   "DL|Main Street U.S.A.": 22,
-   "DL|Adventureland": 26,
-   "DL|New Orleans Square": 28,
-   "DL|Bayou Country": 30,
-   "DL|Frontierland": 28,
-   "DL|Fantasyland": 29,
-   "DL|Mickey's Toontown": 33,
-   "DL|Tomorrowland": 27,
-   "DL|Star Wars: Galaxy's Edge": 32,
-   "DCA|Hollywood Land": 5,
-   "DCA|Avengers Campus": 2,
-   "DCA|Cars Land": 2,
-   "DCA|San Fransokyo Square": 2,
-   "DCA|Paradise Gardens Park": 4,
-   "DCA|Pixar Pier": 6,
-   "DCA|Grizzly Peak": 5
+   "DCA|Grizzly Peak": 9
   },
   "DCA|San Fransokyo Square": {
-   "DL|Main Street U.S.A.": 21,
-   "DL|Adventureland": 25,
-   "DL|New Orleans Square": 27,
-   "DL|Bayou Country": 28,
-   "DL|Frontierland": 27,
-   "DL|Fantasyland": 28,
-   "DL|Mickey's Toontown": 31,
-   "DL|Tomorrowland": 26,
-   "DL|Star Wars: Galaxy's Edge": 30,
-   "DCA|Hollywood Land": 5,
-   "DCA|Avengers Campus": 3,
-   "DCA|Cars Land": 2,
-   "DCA|San Fransokyo Square": 2,
-   "DCA|Paradise Gardens Park": 2,
-   "DCA|Pixar Pier": 4,
-   "DCA|Grizzly Peak": 3
-  },
-  "DCA|Paradise Gardens Park": {
-   "DL|Main Street U.S.A.": 22,
-   "DL|Adventureland": 26,
-   "DL|New Orleans Square": 28,
-   "DL|Bayou Country": 30,
-   "DL|Frontierland": 28,
-   "DL|Fantasyland": 29,
-   "DL|Mickey's Toontown": 33,
-   "DL|Tomorrowland": 27,
-   "DL|Star Wars: Galaxy's Edge": 32,
-   "DCA|Hollywood Land": 7,
-   "DCA|Avengers Campus": 6,
-   "DCA|Cars Land": 4,
-   "DCA|San Fransokyo Square": 2,
-   "DCA|Paradise Gardens Park": 2,
-   "DCA|Pixar Pier": 2,
-   "DCA|Grizzly Peak": 4
-  },
-  "DCA|Pixar Pier": {
-   "DL|Main Street U.S.A.": 24,
-   "DL|Adventureland": 27,
-   "DL|New Orleans Square": 29,
-   "DL|Bayou Country": 31,
-   "DL|Frontierland": 29,
-   "DL|Fantasyland": 31,
-   "DL|Mickey's Toontown": 34,
-   "DL|Tomorrowland": 29,
-   "DL|Star Wars: Galaxy's Edge": 33,
-   "DCA|Hollywood Land": 9,
-   "DCA|Avengers Campus": 8,
-   "DCA|Cars Land": 6,
-   "DCA|San Fransokyo Square": 4,
-   "DCA|Paradise Gardens Park": 2,
-   "DCA|Pixar Pier": 2,
-   "DCA|Grizzly Peak": 5
-  },
-  "DCA|Grizzly Peak": {
-   "DL|Main Street U.S.A.": 19,
-   "DL|Adventureland": 22,
-   "DL|New Orleans Square": 24,
-   "DL|Bayou Country": 26,
-   "DL|Frontierland": 24,
-   "DL|Fantasyland": 25,
-   "DL|Mickey's Toontown": 29,
-   "DL|Tomorrowland": 23,
-   "DL|Star Wars: Galaxy's Edge": 28,
-   "DCA|Hollywood Land": 4,
-   "DCA|Avengers Campus": 5,
+   "DL|Main Street U.S.A.": 31,
+   "DL|Adventureland": 36,
+   "DL|New Orleans Square": 38,
+   "DL|Bayou Country": 40,
+   "DL|Frontierland": 38,
+   "DL|Fantasyland": 40,
+   "DL|Mickey's Toontown": 44,
+   "DL|Tomorrowland": 37,
+   "DL|Star Wars: Galaxy's Edge": 43,
+   "DCA|Hollywood Land": 8,
+   "DCA|Avengers Campus": 7,
    "DCA|Cars Land": 5,
    "DCA|San Fransokyo Square": 3,
-   "DCA|Paradise Gardens Park": 4,
+   "DCA|Paradise Gardens Park": 5,
+   "DCA|Pixar Pier": 7,
+   "DCA|Grizzly Peak": 6
+  },
+  "DCA|Paradise Gardens Park": {
+   "DL|Main Street U.S.A.": 32,
+   "DL|Adventureland": 37,
+   "DL|New Orleans Square": 39,
+   "DL|Bayou Country": 42,
+   "DL|Frontierland": 40,
+   "DL|Fantasyland": 41,
+   "DL|Mickey's Toontown": 46,
+   "DL|Tomorrowland": 39,
+   "DL|Star Wars: Galaxy's Edge": 44,
+   "DCA|Hollywood Land": 11,
+   "DCA|Avengers Campus": 9,
+   "DCA|Cars Land": 7,
+   "DCA|San Fransokyo Square": 5,
+   "DCA|Paradise Gardens Park": 3,
    "DCA|Pixar Pier": 5,
-   "DCA|Grizzly Peak": 2
+   "DCA|Grizzly Peak": 7
+  },
+  "DCA|Pixar Pier": {
+   "DL|Main Street U.S.A.": 34,
+   "DL|Adventureland": 39,
+   "DL|New Orleans Square": 41,
+   "DL|Bayou Country": 44,
+   "DL|Frontierland": 41,
+   "DL|Fantasyland": 43,
+   "DL|Mickey's Toontown": 48,
+   "DL|Tomorrowland": 41,
+   "DL|Star Wars: Galaxy's Edge": 46,
+   "DCA|Hollywood Land": 13,
+   "DCA|Avengers Campus": 12,
+   "DCA|Cars Land": 9,
+   "DCA|San Fransokyo Square": 7,
+   "DCA|Paradise Gardens Park": 5,
+   "DCA|Pixar Pier": 4,
+   "DCA|Grizzly Peak": 9
+  },
+  "DCA|Grizzly Peak": {
+   "DL|Main Street U.S.A.": 28,
+   "DL|Adventureland": 32,
+   "DL|New Orleans Square": 35,
+   "DL|Bayou Country": 37,
+   "DL|Frontierland": 35,
+   "DL|Fantasyland": 37,
+   "DL|Mickey's Toontown": 41,
+   "DL|Tomorrowland": 34,
+   "DL|Star Wars: Galaxy's Edge": 40,
+   "DCA|Hollywood Land": 8,
+   "DCA|Avengers Campus": 9,
+   "DCA|Cars Land": 9,
+   "DCA|San Fransokyo Square": 6,
+   "DCA|Paradise Gardens Park": 7,
+   "DCA|Pixar Pier": 9,
+   "DCA|Grizzly Peak": 4
   }
  },
  "rides": [
@@ -2424,14 +2433,15 @@ window.RIDES_DATA = {
   // Expected wait for a ride at absolute minute t (linear interp between hours).
   // If a live wait exists and t is within 90 min of the live snapshot, blend
   // live -> typical as we look further into the future.
-  function expectedWait(ride, t, liveWaits, nowMinutes) {
+  function expectedWait(ride, t, liveWaits, nowMinutes, waitScale) {
+    waitScale = waitScale || 1;
     var hours = Object.keys(ride.typicalWait).map(Number).sort(function (a, b) { return a - b; });
     var h = t / 60;
     var lo = Math.max(hours[0], Math.min(hours[hours.length - 1], Math.floor(h)));
     var hi = Math.min(hours[hours.length - 1], lo + 1);
     var w0 = ride.typicalWait[String(lo)], w1 = ride.typicalWait[String(hi)];
     var frac = Math.min(1, Math.max(0, h - lo));
-    var typical = w0 + (w1 - w0) * frac;
+    var typical = (w0 + (w1 - w0) * frac) * waitScale;
 
     if (liveWaits && liveWaits[ride.id] != null && nowMinutes != null) {
       var age = Math.abs(t - nowMinutes);
@@ -2450,6 +2460,7 @@ window.RIDES_DATA = {
     var startPark = opts.startPark || "DL";
     var liveWaits = opts.liveWaits || null;
     var nowMinutes = opts.nowMinutes != null ? opts.nowMinutes : null;
+    var waitScale = opts.waitScale || 1; // day-of-week crowd multiplier
 
     var byId = {};
     DATA.rides.forEach(function (r) { byId[r.id] = r; });
@@ -2469,7 +2480,7 @@ window.RIDES_DATA = {
       for (var i = 0; i < todo.length; i++) {
         var r = todo[i];
         var walk = DATA.walkMatrix[loc][r.landKey];
-        var wait = expectedWait(r, t + walk, liveWaits, nowMinutes);
+        var wait = expectedWait(r, t + walk, liveWaits, nowMinutes, waitScale);
         var cost = walk + wait + r.duration;
         if (t + cost > end) continue; // doesn't fit
         // rating^2 so a 5-star headliner beats cheap low-rated filler
@@ -2512,8 +2523,27 @@ const DATA = window.RIDES_DATA;
 const byId = {}; DATA.rides.forEach(r => byId[r.id] = r);
 
 // ---------- state (persisted) ----------
-let state = { ratings:{}, done:{}, tab:"DL",
-              arrival:"09:00", departure:"22:00", startPark:"DL" };
+let state = { ratings:{}, done:{}, mem:{}, tab:"DL", preset:null,
+              arrival:"09:00", departure:"22:00", startPark:"DL", visitDate:null };
+
+// day-of-week crowd multiplier (Sun..Sat) — weekends run meaningfully longer waits
+const DOW_SCALE = [1.15, 0.95, 0.90, 0.90, 0.95, 1.05, 1.25];
+const DOW_LABEL = ["busier than average","about average","lighter than average",
+                   "lighter than average","about average","a bit busier","the busiest"];
+function todayISO(){ const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function waitScale(){
+  const v = document.getElementById("visitDate").value || todayISO();
+  return DOW_SCALE[new Date(v+"T12:00").getDay()];
+}
+function crowdNote(){
+  const v = document.getElementById("visitDate").value || todayISO();
+  const d = new Date(v+"T12:00");
+  const day = d.toLocaleDateString(undefined,{weekday:"long"});
+  document.getElementById("crowdNoteEl").textContent =
+    `${day}s are typically ${DOW_LABEL[d.getDay()]} — waits scaled ×${DOW_SCALE[d.getDay()]}.`;
+  state.visitDate = v; save();
+}
 try { Object.assign(state, JSON.parse(localStorage.getItem("dlopt")||"{}")); } catch(e){}
 let liveWaits = null, liveAt = null, lastPlan = null;
 function save(){ try{ localStorage.setItem("dlopt", JSON.stringify(state)); }catch(e){} }
@@ -2533,7 +2563,9 @@ function renderPicker(){
     h += `<div class="land">${land}</div>`;
     for (const r of lands[land].sort((a,b)=>b.peakWait-a.peakWait)){
       const rating = state.ratings[r.id]||0;
-      h += `<div class="ride"><div>
+      h += `<div class="ride">
+            <input type="checkbox" class="selbox" ${rating>0?"checked":""} onchange="toggleSel(${r.id})">
+            <div class="rmid ${rating>0?"":"dim"}">
               <div class="rname">${TYPE_ICON[r.type]||""}${r.name}</div>
               <div class="rmeta">~${r.peakWait} min peak · ${r.duration} min ride</div>
             </div><div class="stars" data-id="${r.id}">`;
@@ -2548,8 +2580,23 @@ function rate(id, s){
   state.ratings[id] = (state.ratings[id]===s) ? 0 : s;
   save(); renderPicker();
 }
+// checkbox: uncheck removes ride from the plan but remembers its stars;
+// re-check restores them (or defaults to 3)
+function toggleSel(id){
+  state.mem = state.mem || {};
+  if (state.ratings[id] > 0){
+    state.mem[id] = state.ratings[id];
+    state.ratings[id] = 0;
+  } else {
+    state.ratings[id] = state.mem[id] || 3;
+  }
+  save(); renderPicker();
+}
 function preset(kind){
-  if (kind==="clear"){ state.ratings={}; state.done={}; }
+  state.preset = (kind==="clear") ? null : kind;
+  ["thrills","classics","kids"].forEach(k =>
+    document.getElementById("pb-"+k).classList.toggle("on", state.preset===k));
+  if (kind==="clear"){ state.ratings={}; state.done={}; state.mem={}; }
   else DATA.rides.forEach(r=>{
     if (kind==="thrills"){
       if (r.profile==="headliner"||r.profile==="ropedrop") state.ratings[r.id]=5;
@@ -2593,7 +2640,8 @@ function nowHHMM(){ const d=new Date();
 function runPlan(arrival, startLand){
   readSettings();
   const opts = { ratings:activeRatings(), arrival:arrival||state.arrival,
-    departure:state.departure, startPark:state.startPark, startLand:startLand||null };
+    departure:state.departure, startPark:state.startPark, startLand:startLand||null,
+    waitScale: waitScale() };
   if (liveWaits && liveAt){ opts.liveWaits=liveWaits; opts.nowMinutes=liveAt; }
   lastPlan = Scheduler.optimize(DATA, opts);
   renderPlan();
@@ -2662,6 +2710,10 @@ async function refreshLive(){
 document.getElementById("arrival").value = state.arrival;
 document.getElementById("departure").value = state.departure;
 document.getElementById("startPark").value = state.startPark;
+document.getElementById("visitDate").value = state.visitDate || todayISO();
+["thrills","classics","kids"].forEach(k =>
+  document.getElementById("pb-"+k).classList.toggle("on", state.preset===k));
+crowdNote();
 renderPicker();
 </script>
 </body>
